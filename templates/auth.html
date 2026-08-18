@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Criar conta' if mode == 'signup' else 'Entrar' }} — TriQuest{% endblock %}
+{% block body %}
+<main id="conteudo" class="auth-shell">
+  <a class="auth-brand" href="{{ url_for('index') }}"><img src="{{ url_for('asset', filename='logo.svg') }}" alt=""><span><b>TRI</b>QUEST</span></a>
+  <section class="auth-card">
+    <div class="auth-heading">
+      <span class="eyebrow">{{ 'Comece sua jornada' if mode == 'signup' else 'Continue sua jornada' }}</span>
+      <h1>{{ 'Crie sua conta' if mode == 'signup' else 'Que bom ver você' }}</h1>
+      <p>{{ 'Salve seu progresso e acompanhe cada conquista.' if mode == 'signup' else 'Entre para continuar de onde parou.' }}</p>
+    </div>
+    <form id="auth-form" data-mode="{{ mode }}" novalidate>
+      {% if mode == 'signup' %}
+      <label>Nome de aventureiro<input id="name" name="name" autocomplete="name" minlength="2" maxlength="40" required placeholder="Como devemos chamar você?"></label>
+      {% endif %}
+      <label>E-mail<input id="email" name="email" type="email" autocomplete="email" required placeholder="voce@exemplo.com"></label>
+      <label>Senha<input id="password" name="password" type="password" autocomplete="{{ 'new-password' if mode == 'signup' else 'current-password' }}" minlength="6" required placeholder="Mínimo de 6 caracteres"></label>
+      <p id="form-message" class="form-message" role="alert"></p>
+      <button class="button button-primary" type="submit"><span>{{ 'Cadastrar' if mode == 'signup' else 'Entrar' }}</span><i class="button-loader" hidden></i></button>
+    </form>
+    <p class="auth-switch">{{ 'Já tem uma conta?' if mode == 'signup' else 'Ainda não tem uma conta?' }} <a href="{{ url_for('login' if mode == 'signup' else 'signup') }}">{{ 'Entrar' if mode == 'signup' else 'Cadastre-se' }}</a></p>
+  </section>
+  <aside class="auth-art"><img src="{{ url_for('asset', filename='mascote_feliz.svg') }}" alt="Mascote TriQuest feliz"><p>Seu progresso fica salvo em qualquer dispositivo.</p></aside>
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>{% endblock %}

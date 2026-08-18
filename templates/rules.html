@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Instruções — TriQuest{% endblock %}
+{% block body %}
+<div class="app-shell">
+  {% include '_header.html' %}
+  <main id="conteudo" class="rules-layout">
+    <header class="rules-intro"><span class="eyebrow">Manual do aventureiro</span><h1>Como jogar</h1><p>Domine as razões trigonométricas em três mundos e conquiste o Reino de Triangulia.</p></header>
+    <section class="rule-grid">
+      <article><span>01</span><h2>Observe o triângulo</h2><p>Encontre o ângulo indicado e identifique hipotenusa, cateto oposto e cateto adjacente.</p></article>
+      <article><span>02</span><h2>Escolha a razão</h2><p><b>Seno</b> = oposto ÷ hipotenusa<br><b>Cosseno</b> = adjacente ÷ hipotenusa<br><b>Tangente</b> = oposto ÷ adjacente</p></article>
+      <article><span>03</span><h2>Proteja suas vidas</h2><p>Você começa com três vidas. Uma resposta errada remove uma delas, mas mostra uma explicação para ajudar.</p></article>
+      <article><span>04</span><h2>Ganhe pontos</h2><p>Acerto vale 100 pontos, a dica reduz para 50 e respostas em menos de 45 segundos recebem 20 pontos extras.</p></article>
+    </section>
+    <section class="worlds"><h2>Os três mundos</h2><div><article><b>Mundo 1</b><h3>Vale dos identificadores</h3><p>Reconheça os lados do triângulo.</p></article><article><b>Mundo 2</b><h3>Templo dos ângulos</h3><p>Calcule razões de 30°, 45° e 60°.</p></article><article><b>Mundo 3</b><h3>Montanha das aplicações</h3><p>Resolva situações do mundo real.</p></article></div></section>
+    <a class="button button-primary rules-back" href="{{ url_for('home') }}">Voltar ao início</a>
+  </main>
+  {% include '_mobile_nav.html' %}
+</div>
+{% endblock %}

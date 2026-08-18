@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}TriQuest — Trigonometria em diversão{% endblock %}
+{% block body %}
+<main id="conteudo" class="landing-shell">
+  <section class="landing-copy">
+    <div class="landing-brand">
+      <img src="{{ url_for('asset', filename='logo.svg') }}" alt="Símbolo triangular do TriQuest">
+      <h1><span>TRI</span>QUEST</h1>
+    </div>
+    <p class="eyebrow">Uma aventura pelo Reino de Triangulia</p>
+    <h2>Transforme ângulos em <em>conquistas.</em></h2>
+    <p class="landing-description">Aprenda seno, cosseno e tangente em desafios rápidos, com dicas, vidas e recompensas.</p>
+    <div class="landing-actions">
+      <a class="button button-primary" href="{{ url_for('login') }}">Entrar</a>
+      <a class="button button-secondary" href="{{ url_for('signup') }}">Criar conta</a>
+    </div>
+  </section>
+  <aside class="landing-preview" aria-label="Prévia do jogo">
+    <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+    <img src="{{ url_for('asset', filename='mascote_apontando.svg') }}" alt="Mascote triangular do TriQuest apontando">
+    <div class="formula-card"><span>sen(θ)</span><b>oposto ÷ hipotenusa</b></div>
+    <div class="formula-card formula-card-alt"><span>cos(θ)</span><b>adjacente ÷ hipotenusa</b></div>
+  </aside>
+</main>
+{% endblock %}

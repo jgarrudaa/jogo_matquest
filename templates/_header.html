@@ -1,0 +1,15 @@
+<header class="site-header">
+  <a class="brand" href="{{ url_for('home') }}" aria-label="TriQuest — início">
+    <img src="{{ url_for('asset', filename='logo.svg') }}" alt="" width="38" height="38">
+    <span><b>TRI</b>QUEST</span>
+  </a>
+  <nav class="desktop-nav" aria-label="Navegação principal">
+    <a class="{{ 'active' if page == 'home' }}" href="{{ url_for('home') }}">Início</a>
+    <a class="{{ 'active' if page == 'quiz' }}" href="{{ url_for('quiz') }}">Jogar</a>
+    <a class="{{ 'active' if page == 'rules' }}" href="{{ url_for('rules') }}">Instruções</a>
+  </nav>
+  <div class="header-actions">
+    <span class="user-chip" id="user-chip">Estudante</span>
+    <button class="icon-button" id="logout-button" type="button" aria-label="Sair" title="Sair">↪</button>
+  </div>
+</header>

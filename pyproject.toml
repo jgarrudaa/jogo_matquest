@@ -1,0 +1,8 @@
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+extend-exclude = [".agents", ".venv"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Resultado — TriQuest{% endblock %}
+{% block body %}
+<main id="conteudo" class="result-shell" data-result="{{ result_type }}">
+  <section class="result-card">
+    <a class="result-back" href="{{ url_for('home') }}">← Início</a>
+    <span class="result-kicker" id="result-kicker"></span><h1 id="result-title">Resultado</h1>
+    <img id="result-mascot" src="{{ url_for('asset', filename='mascote_feliz.svg') }}" data-happy="{{ url_for('asset', filename='mascote_feliz.svg') }}" data-sad="{{ url_for('asset', filename='mascote_triste.svg') }}" alt="Mascote TriQuest">
+    <p id="result-message"></p><strong id="result-score"></strong><p class="result-explanation" id="result-explanation"></p>
+    <div class="result-actions"><button class="button button-primary" id="result-primary">Continuar</button><a class="button button-secondary" href="{{ url_for('home') }}">Voltar ao início</a></div>
+  </section>
+</main>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/result.js') }}" defer></script>{% endblock %}

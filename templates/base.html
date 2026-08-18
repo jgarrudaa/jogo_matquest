@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101451">
+  <meta name="description" content="TriQuest — aprenda razões trigonométricas jogando.">
+  <title>{% block title %}TriQuest{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('asset', filename='logo.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="page-{{ page }}">
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  {% block body %}{% endblock %}
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script>
+    window.TRIQUEST_CONFIG = {{ {'supabaseUrl': supabase_url, 'supabaseKey': supabase_key}|tojson }};
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ url_for('static', filename='js/supabase-client.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

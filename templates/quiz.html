@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Desafio — TriQuest{% endblock %}
+{% block body %}
+<div class="app-shell quiz-app">
+  {% include '_header.html' %}
+  <main id="conteudo" class="quiz-layout">
+    <aside class="quiz-map">
+      <span class="eyebrow">Jornada atual</span><h2>Vale dos ângulos</h2>
+      <div class="map-progress"><i id="map-progress"></i></div>
+      <ol id="question-map"></ol>
+      <a href="{{ url_for('home') }}">← Voltar ao início</a>
+    </aside>
+    <section class="quiz-stage" aria-live="polite">
+      <header class="quiz-status"><a href="{{ url_for('home') }}" class="back-mobile" aria-label="Voltar">‹</a><div><span id="question-counter">Pergunta 1 de 10</span><div class="progress"><i id="quiz-progress"></i></div></div><span class="lives" id="lives">♥ ♥ ♥ <b>3/3</b></span></header>
+      <article class="question-card skeleton" id="question-card"><span class="question-topic" id="question-topic">Carregando</span><h1 id="question-text">Preparando seu desafio...</h1><div class="question-visual" id="question-visual" aria-hidden="true"><span>θ</span><i></i><b></b></div></article>
+      <div class="options" id="options" role="radiogroup" aria-label="Alternativas"></div>
+      <div class="hint-box" id="hint-box" hidden><b>Oráculo:</b> <span id="hint-text"></span></div>
+      <footer class="quiz-actions"><button class="button button-hint" id="hint-button" type="button">💡 Dica</button><button class="button button-primary" id="answer-button" type="button" disabled>Responder</button></footer>
+    </section>
+    <aside class="quiz-help"><img src="{{ url_for('asset', filename='mascote_apontando.svg') }}" alt="Mascote do Oráculo"><span class="eyebrow">Oráculo</span><h2>Observe os lados</h2><p>Identifique primeiro a hipotenusa e os catetos em relação ao ângulo marcado.</p><div class="formula-note"><b>SOH</b><span>seno = oposto / hipotenusa</span><b>CAH</b><span>cosseno = adjacente / hipotenusa</span><b>TOA</b><span>tangente = oposto / adjacente</span></div></aside>
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/game.js') }}" defer></script>{% endblock %}
