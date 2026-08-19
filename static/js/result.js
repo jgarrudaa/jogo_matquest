@@ -1,12 +1,49 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const type = document.querySelector('.result-shell').dataset.result; const state = window.GameState.get(); const mascot = document.querySelector('#result-mascot');
+  const engine = window.TriQuestEngine;
+  const shell = document.querySelector('.result-shell');
+  const type = shell.dataset.result;
+  const state = window.GameState.get();
+  const mascot = document.querySelector('#result-mascot');
+  const isRoundEnd = ['vencedor', 'perdedor', 'sem-vidas'].includes(type);
   const configs = {
-    acerto: ['Resposta correta', 'Muito bem.', `+${state.lastPoints || 100} pontos`, 'Próxima pergunta', true],
-    erro: ['Continue tentando', 'Quase lá.', 'Você perdeu uma vida.', 'Tentar novamente', false],
-    vencedor: ['Jornada concluída', 'Incrível.', `${state.score} pontos`, 'Jogar novamente', true],
-    perdedor: ['Jornada encerrada', 'Você chegou longe.', `${state.score} pontos`, 'Tentar novamente', false],
-    'sem-vidas': ['Vidas esgotadas', 'Não desanime.', 'Cada tentativa ensina um novo caminho.', 'Tentar novamente', false],
+    acerto: ['Resposta correta', 'Muito bem.', `+${state.lastPoints} pontos`, 'Próximo desafio', true],
+    erro: ['Revise a resolução', 'Vamos tentar outra vez.', 'Você perdeu uma vida, mas não perdeu pontos.', 'Tentar novamente', false],
+    vencedor: ['Rodada concluída', 'Excelente desempenho.', `${state.score} pontos`, 'Nova rodada', true],
+    perdedor: ['Rodada concluída', 'Continue praticando.', `${state.score} pontos`, 'Tentar novamente', false],
+    'sem-vidas': ['Vidas esgotadas', 'A rodada terminou.', `${state.score} pontos conquistados`, 'Tentar novamente', false],
   };
-  const c = configs[type]; document.querySelector('#result-kicker').textContent=c[0]; document.querySelector('#result-title').textContent=c[1]; document.querySelector('#result-message').textContent=c[2]; mascot.src=c[4]?mascot.dataset.happy:mascot.dataset.sad; document.querySelector('#result-explanation').textContent = type==='erro' ? state.lastExplanation : '';
-  const button = document.querySelector('#result-primary'); button.textContent=c[3]; button.addEventListener('click', () => { if (['vencedor','perdedor','sem-vidas'].includes(type)) { window.GameState.reset(); location.href='/jogar'; return; } if (type==='acerto') { const next=state.questionIndex+1; if (next>=10) { location.href=`/resultado/${state.correct>=7?'vencedor':'perdedor'}`; return; } window.GameState.set({questionIndex:next}); } location.href='/jogar'; });
+  const config = configs[type];
+  document.querySelector('#result-kicker').textContent = config[0];
+  document.querySelector('#result-title').textContent = config[1];
+  document.querySelector('#result-message').textContent = config[2];
+  document.querySelector('#result-explanation').textContent = type === 'erro' ? state.lastExplanation : performanceFeedback(state.score, type);
+  mascot.src = config[4] ? mascot.dataset.happy : mascot.dataset.sad;
+  if (type === 'vencedor') shell.classList.add('celebrate');
+
+  const primary = document.querySelector('#result-primary');
+  primary.textContent = config[3];
+  primary.addEventListener('click', () => {
+    if (isRoundEnd) {
+      const topicQuery = state.roundTopic ? `&topic=${state.roundTopic}` : '';
+      window.GameState.reset();
+      location.href = `/jogar?new=1${topicQuery}`;
+      return;
+    }
+    if (type === 'acerto') {
+      const nextIndex = state.questionIndex + 1;
+      if (nextIndex >= engine.ROUND_SIZE) {
+        location.href = `/resultado/${state.score >= engine.WIN_SCORE ? 'vencedor' : 'perdedor'}`;
+        return;
+      }
+      window.GameState.set({ questionIndex: nextIndex });
+    }
+    location.href = '/jogar';
+  });
 });
+
+function performanceFeedback(score, type) {
+  if (type === 'sem-vidas') return 'Revise as explicações e inicie uma nova rodada quando estiver pronto.';
+  if (score >= 900) return 'Você demonstrou domínio excelente das razões trigonométricas.';
+  if (score >= 700) return 'Você concluiu a rodada com um ótimo domínio dos conceitos.';
+  return 'Observe as dicas e explicações para aumentar sua pontuação na próxima rodada.';
+}
