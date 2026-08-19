@@ -2,6 +2,14 @@
 
 Jogo educacional responsivo sobre razões trigonométricas, construído com Flask, JavaScript e Supabase.
 
+## Regras principais
+
+- Rodadas aleatórias de 10 desafios, gerais ou filtradas por tema.
+- Três vidas; uma resposta incorreta não remove pontos, mostra a resolução e repete o desafio.
+- Acerto sem dica: 100 pontos. Acerto com dica: 50 pontos.
+- Vitória a partir de 700 pontos; uma nova rodada sorteia outra combinação.
+- As barras da página inicial mostram perguntas distintas já dominadas em cada tema.
+
 ## Executar localmente
 
 1. Crie um ambiente virtual: `python -m venv .venv`
@@ -16,7 +24,7 @@ Jogo educacional responsivo sobre razões trigonométricas, construído com Flas
 - `app.py`: rotas Flask e configuração pública.
 - `templates/`: páginas e componentes HTML.
 - `static/css/`: sistema visual responsivo.
-- `static/js/`: autenticação, estado e lógica do jogo.
+- `static/js/`: autenticação, estado, motor testável de rodadas e lógica do jogo.
 - `imagens_triquest/`: identidade e ilustrações originais.
 - `tests/`: testes das rotas Flask.
 - `supabase/`: documentação do esquema remoto.
