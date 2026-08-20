@@ -17,7 +17,15 @@
   }
 
   function createRound(questions, topic = null, random = Math.random) {
-    const eligible = topic ? questions.filter((question) => question.topic === topic) : questions;
+    const seen = new Set();
+    const eligible = (Array.isArray(questions) ? questions : []).filter((question) => {
+      if (!question || question.id === null || question.id === undefined) return false;
+      if (topic && question.topic !== topic) return false;
+      const id = String(question.id);
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
     if (eligible.length < ROUND_SIZE) {
       throw new Error(`São necessárias pelo menos ${ROUND_SIZE} perguntas para esta rodada.`);
     }
@@ -32,14 +40,20 @@
   function calculateMastery(questions, attempts) {
     const totals = {};
     const mastered = {};
-    questions.forEach((question) => {
+    const activeQuestions = new Map();
+    (Array.isArray(questions) ? questions : []).forEach((question) => {
+      if (!question || question.id === null || question.id === undefined || !question.topic) return;
+      const questionId = String(question.id);
+      if (activeQuestions.has(questionId)) return;
       totals[question.topic] = (totals[question.topic] || 0) + 1;
+      activeQuestions.set(questionId, question.topic);
     });
-    attempts.filter((attempt) => attempt.is_correct).forEach((attempt) => {
-      const topic = attempt.questions?.topic;
+    (Array.isArray(attempts) ? attempts : []).filter((attempt) => attempt?.is_correct).forEach((attempt) => {
+      const questionId = String(attempt.question_id);
+      const topic = activeQuestions.get(questionId);
       if (!topic) return;
       if (!mastered[topic]) mastered[topic] = new Set();
-      mastered[topic].add(attempt.question_id);
+      mastered[topic].add(questionId);
     });
     return Object.fromEntries(Object.keys(totals).map((topic) => [
       topic,

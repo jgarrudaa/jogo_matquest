@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('#result-kicker').textContent = config[0];
   document.querySelector('#result-title').textContent = config[1];
   document.querySelector('#result-message').textContent = config[2];
-  document.querySelector('#result-explanation').textContent = type === 'erro' ? state.lastExplanation : performanceFeedback(state.score, type);
+  document.querySelector('#result-explanation').textContent = ['acerto', 'erro'].includes(type)
+    ? state.lastExplanation
+    : performanceFeedback(state.score, type);
   mascot.src = config[4] ? mascot.dataset.happy : mascot.dataset.sad;
   if (type === 'vencedor') shell.classList.add('celebrate');
 
@@ -30,12 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (type === 'acerto') {
-      const nextIndex = state.questionIndex + 1;
+      let nextIndex = state.questionIndex;
+      if (state.lastResult === 'acerto' && state.lastAnsweredIndex === null) {
+        nextIndex += 1;
+        window.GameState.set({ questionIndex: nextIndex });
+      }
       if (nextIndex >= engine.ROUND_SIZE) {
         location.href = `/resultado/${state.score >= engine.WIN_SCORE ? 'vencedor' : 'perdedor'}`;
         return;
       }
-      window.GameState.set({ questionIndex: nextIndex });
     }
     location.href = '/jogar';
   });

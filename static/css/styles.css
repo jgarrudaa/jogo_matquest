@@ -65,3 +65,7 @@
 .mastery-label{color:#4f587c;font-size:.74rem;font-weight:900}
 @media(max-width:1100px){.daily-card{grid-template-columns:minmax(0,1fr) 9rem;min-height:15rem}.daily-card img{width:100%}}
 @media(max-width:760px){.daily-card{grid-template-columns:minmax(0,1fr) 7.5rem;min-height:0;padding:1.2rem}.daily-card img{width:100%}.theme-card .progress{height:.6rem}}
+
+/* Interaction locks and mobile progress visibility */
+.option:disabled{cursor:default;transform:none}
+@media(max-width:760px){.stats-card{display:block;margin-bottom:.5rem}.page-home .toast,.page-rules .toast{bottom:5.25rem}}

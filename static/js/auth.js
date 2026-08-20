@@ -6,7 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const loader = submit.querySelector('.button-loader');
 
   form.addEventListener('submit', async (event) => {
-    event.preventDefault(); message.textContent = '';
+    event.preventDefault();
+    if (submit.disabled) return;
+    message.className = 'form-message';
+    message.textContent = '';
     if (!form.checkValidity()) { form.reportValidity(); return; }
     const client = window.triquestSupabase;
     if (!client) { message.textContent = 'Não foi possível conectar ao serviço de cadastro.'; return; }

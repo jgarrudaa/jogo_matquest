@@ -23,9 +23,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allQuestions = FALLBACK_QUESTIONS;
 
   try {
+    if (!client) throw new Error('Supabase indisponível.');
     const { data, error } = await client.from('questions').select('id,topic,prompt,options,correct_answer,hint,explanation').eq('is_active', true);
     if (error) throw error;
-    if (data?.length) allQuestions = data;
+    const validQuestions = (data || []).filter(isValidQuestion);
+    if (validQuestions.length < engine.ROUND_SIZE) throw new Error('Banco de perguntas indisponível.');
+    allQuestions = validQuestions;
   } catch {
     window.showToast('Modo offline: usando perguntas locais.');
   }
@@ -35,43 +38,88 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const round = engine.createRound(allQuestions, requestedTopic);
       state = window.GameState.reset();
-      state = window.GameState.set({ roundQuestionIds: round.map((question) => question.id), roundTopic: requestedTopic, roundId: crypto.randomUUID?.() || `${Date.now()}` });
+      state = window.GameState.set({
+        roundQuestionIds: round.map((question) => question.id),
+        roundTopic: requestedTopic,
+        roundId: globalThis.crypto?.randomUUID?.() || `${Date.now()}`,
+      });
     } catch (error) {
       showRoundError(error.message);
       return;
     }
   }
 
+  if (state.questionIndex >= engine.ROUND_SIZE) {
+    location.replace(`/resultado/${state.score >= engine.WIN_SCORE ? 'vencedor' : 'perdedor'}`);
+    return;
+  }
+
   const questionById = new Map(allQuestions.map((question) => [String(question.id), question]));
   const roundQuestions = state.roundQuestionIds.map((id) => questionById.get(String(id))).filter(Boolean);
   if (roundQuestions.length !== engine.ROUND_SIZE) {
-    const replacement = engine.createRound(allQuestions, state.roundTopic);
-    state = window.GameState.set({ roundQuestionIds: replacement.map((question) => question.id), questionIndex: 0 });
-    roundQuestions.splice(0, roundQuestions.length, ...replacement);
+    try {
+      const replacement = engine.createRound(allQuestions, state.roundTopic);
+      state = window.GameState.set({
+        roundQuestionIds: replacement.map((question) => question.id),
+        questionIndex: 0,
+        hintUsed: false,
+        lastAnsweredIndex: null,
+      });
+      roundQuestions.splice(0, roundQuestions.length, ...replacement);
+      window.showToast('A rodada foi recuperada com uma nova seleção de perguntas.');
+    } catch (error) {
+      showRoundError(error.message);
+      return;
+    }
   }
 
   const index = Math.min(state.questionIndex, engine.ROUND_SIZE - 1);
   const question = roundQuestions[index];
   let selected = null;
+  let submitting = false;
   const startedAt = Date.now();
   renderRoundTitle(state.roundTopic);
   renderMap(roundQuestions, index);
   renderQuestion(question, index, state);
 
-  document.querySelector('#hint-button').addEventListener('click', () => {
+  const hintButton = document.querySelector('#hint-button');
+  const answerButton = document.querySelector('#answer-button');
+
+  function revealHint() {
     document.querySelector('#hint-text').textContent = question.hint;
     document.querySelector('#hint-box').hidden = false;
+    hintButton.disabled = true;
+  }
+
+  if (state.hintUsed) revealHint();
+
+  hintButton.addEventListener('click', () => {
+    revealHint();
     window.GameState.set({ hintUsed: true });
-    document.querySelector('#hint-button').disabled = true;
   });
 
-  document.querySelector('#answer-button').addEventListener('click', async () => {
-    if (selected === null) return;
+  answerButton.addEventListener('click', async () => {
+    if (selected === null || submitting) return;
+    submitting = true;
+    answerButton.disabled = true;
+    hintButton.disabled = true;
+    document.querySelectorAll('.option').forEach((option) => { option.disabled = true; });
     const current = window.GameState.get();
-    const correct = selected === question.correct_answer;
+    const correct = selected === Number(question.correct_answer);
     const elapsed = Math.round((Date.now() - startedAt) / 1000);
     const points = engine.calculatePoints({ correct, hintUsed: current.hintUsed });
-    const next = window.GameState.set({ score: current.score + points, correct: current.correct + (correct ? 1 : 0), streak: correct ? current.streak + 1 : 0, lives: correct ? current.lives : current.lives - 1, lastResult: correct ? 'acerto' : 'erro', lastExplanation: question.explanation, lastPoints: points, hintUsed: false });
+    const next = window.GameState.set({
+      questionIndex: correct ? current.questionIndex + 1 : current.questionIndex,
+      score: current.score + points,
+      correct: current.correct + (correct ? 1 : 0),
+      streak: correct ? current.streak + 1 : 0,
+      lives: correct ? current.lives : current.lives - 1,
+      lastResult: correct ? 'acerto' : 'erro',
+      lastExplanation: question.explanation,
+      lastPoints: points,
+      lastAnsweredIndex: current.questionIndex,
+      hintUsed: correct ? false : current.hintUsed,
+    });
     await saveAttempt(question.id, selected, correct, points, elapsed);
     location.href = next.lives <= 0 ? '/resultado/sem-vidas' : `/resultado/${correct ? 'acerto' : 'erro'}`;
   });
@@ -92,7 +140,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       button.type = 'button';
       button.setAttribute('role', 'radio');
       button.setAttribute('aria-checked', 'false');
-      button.innerHTML = `<b>${letters[optionIndex]}</b><span>${option}</span><i></i>`;
+      const letter = document.createElement('b');
+      letter.textContent = letters[optionIndex] || `${optionIndex + 1}`;
+      const text = document.createElement('span');
+      text.textContent = String(option);
+      const marker = document.createElement('i');
+      button.append(letter, text, marker);
       button.addEventListener('click', () => {
         selected = optionIndex;
         container.querySelectorAll('.option').forEach((node) => { node.classList.remove('selected'); node.setAttribute('aria-checked', 'false'); });
@@ -119,10 +172,35 @@ function renderMap(questions, current) {
   questions.forEach((question, index) => {
     const item = document.createElement('li');
     item.className = index < current ? 'done' : index === current ? 'current' : '';
-    item.innerHTML = `<span>${index < current ? '✓' : index + 1}</span><b>${topicLabel(question.topic)}</b>`;
+    const marker = document.createElement('span');
+    marker.textContent = index < current ? '✓' : `${index + 1}`;
+    const label = document.createElement('b');
+    label.textContent = topicLabel(question.topic);
+    item.append(marker, label);
     map.appendChild(item);
   });
-  document.querySelector('#map-progress').style.height = `${(current / 9) * 100}%`;
+  document.querySelector('#map-progress').style.height = `${(current / (window.TriQuestEngine.ROUND_SIZE - 1)) * 100}%`;
+}
+
+function isValidQuestion(question) {
+  return Boolean(
+    question
+    && question.id !== null
+    && question.id !== undefined
+    && ['seno', 'cosseno', 'tangente', 'razoes'].includes(question.topic)
+    && typeof question.prompt === 'string'
+    && question.prompt.trim()
+    && Array.isArray(question.options)
+    && question.options.length === 4
+    && question.options.every((option) => ['string', 'number'].includes(typeof option))
+    && Number.isInteger(Number(question.correct_answer))
+    && Number(question.correct_answer) >= 0
+    && Number(question.correct_answer) < question.options.length
+    && typeof question.hint === 'string'
+    && question.hint.trim()
+    && typeof question.explanation === 'string'
+    && question.explanation.trim()
+  );
 }
 
 function showRoundError(message) {
@@ -135,9 +213,14 @@ function showRoundError(message) {
 async function saveAttempt(questionId, answer, correct, points, elapsed) {
   const client = window.triquestSupabase;
   if (!client || String(questionId).startsWith('local')) return;
-  const { data: auth } = await client.auth.getUser();
-  const user = auth?.user;
-  if (!user) return;
-  const { error } = await client.from('attempts').insert({ user_id: user.id, question_id: questionId, selected_answer: answer, is_correct: correct, points_earned: points, response_time_seconds: elapsed });
-  if (error) window.showToast('A resposta foi avaliada, mas o progresso não pôde ser sincronizado.');
+  try {
+    const { data: auth, error: authError } = await client.auth.getUser();
+    const user = auth?.user;
+    if (!user) return;
+    if (authError) throw authError;
+    const { error } = await client.from('attempts').insert({ user_id: user.id, question_id: questionId, selected_answer: answer, is_correct: correct, points_earned: points, response_time_seconds: elapsed });
+    if (error) throw error;
+  } catch {
+    window.showToast('A resposta foi avaliada, mas o progresso não pôde ser sincronizado.');
+  }
 }
